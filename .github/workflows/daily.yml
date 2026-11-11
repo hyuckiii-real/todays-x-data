@@ -1,0 +1,38 @@
+name: Daily Word Generator
+
+on:
+  schedule:
+    # UTC 15:00 = 한국 시간(KST) 자정 00:00
+    - cron: '0 15 * * *'
+  workflow_dispatch: # 테스트용 수동 실행 버튼 활성화
+
+jobs:
+  run-daily:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # 깃허브에 파일 커밋 권한 부여
+
+    steps:
+      - name: 저장소 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Python 3.11 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Google GenAI 패키지 설치
+        run: pip install google-genai
+
+      - name: 스크립트 실행
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python generate.py
+
+      - name: 갱신된 파일 커밋 및 푸시
+        run: |
+          git config --global user.name "DailyBot"
+          git config --global user.email "bot@github.com"
+          git add today.json archive.json
+          git commit -m "Auto update: $(date +'%Y-%m-%d')" || exit 0
+          git push
