@@ -2,7 +2,7 @@ name: Daily Word Generator
 
 on:
   schedule:
-    - cron: '0 15 * * *' # KST 자정(00:00)
+    - cron: '0 15 * * *'
   workflow_dispatch:
 
 jobs:
@@ -20,8 +20,8 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Gemini 패키지 설치
-        run: pip install google-generativeai
+      - name: 최신 Google GenAI 패키지 설치
+        run: pip install google-genai
 
       - name: 스크립트 실행
         env:
