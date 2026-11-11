@@ -49,15 +49,14 @@ payload = {
     }
 }
 
-# 후보 모델 목록
-models_to_try = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.5-flash"]
+models_to_try = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
 raw_text = ""
 
 for model_name in models_to_try:
-    url = f"[https://generativelanguage.googleapis.com/v1beta/models/](https://generativelanguage.googleapis.com/v1beta/models/){model_name}:generateContent"
+    endpoint = "[https://generativelanguage.googleapis.com/v1beta/models/](https://generativelanguage.googleapis.com/v1beta/models/)" + model_name + ":generateContent"
     try:
         resp = requests.post(
-            url,
+            endpoint,
             params={"key": api_key},
             headers={"Content-Type": "application/json"},
             json=payload,
@@ -69,9 +68,9 @@ for model_name in models_to_try:
             print(f"성공 모델: {model_name}")
             break
         else:
-            print(f"모델 {model_name} HTTP {resp.status_code}: {resp.text}")
+            print(f"모델 {model_name} 실패 (상태코드 {resp.status_code}): {resp.text}")
     except Exception as err:
-        print(f"모델 {model_name} 연결 에러: {err}")
+        print(f"모델 {model_name} 통신 에러: {err}")
         continue
 
 if not raw_text:
