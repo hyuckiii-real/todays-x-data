@@ -19,12 +19,35 @@ if os.path.exists("archive.json"):
 
 past_words = [item.get("word", "").lower() for item in archive if isinstance(item, dict)]
 
-# 구글 공식 최신 GenAI 클라이언트
+# 최신 GenAI 클라이언트
 client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
+# 1. 현재 계정/키에서 실제 사용 가능한 generateContent 지원 모델 찾기
+available_model = None
+try:
+    for m in client.models.list():
+        # generateContent를 지원하는 모델 검색
+        actions = getattr(m, 'supported_actions', []) or getattr(m, 'supported_generation_methods', [])
+        if "generateContent" in actions or "generate_content" in actions:
+            # flash 계열 우선 선택
+            model_name = m.name.replace("models/", "")
+            if "flash" in model_name:
+                available_model = model_name
+                break
+            if not available_model:
+                available_model = model_name
+except Exception as e:
+    print(f"모델 목록 조회 실패: {e}")
+
+# 목록 조회 실패 시 기본 추천 모델 사용
+if not available_model:
+    available_model = "gemini-2.5-flash"
+
+print(f"선택된 모델: {available_model}")
+
 prompt = f"""
-유용한 영어 단어나 숙어 1개를 선정해서 반드시 순수한 JSON 형식으로만 응답해줘.
-마크다운 코드블록(```json 등)은 일체 쓰지 말고 순수 텍스트만 출력해.
+유용한 영어 단어나 숙어 1개를 골라 순수한 JSON 형식으로만 응답해줘.
+코드블록(```) 등은 일체 포함하지 마.
 
 제외 단어: {past_words[-100:]}
 날짜: {today_str}
@@ -36,14 +59,13 @@ prompt = f"""
   "phonetic": "/발음기호/",
   "part_of_speech": "품사",
   "meaning": "한국어 뜻",
-  "example_en": "영어 예문 1개",
-  "example_ko": "예문의 한국어 해석"
+  "example_en": "영어 예문",
+  "example_ko": "한국어 해석"
 }}
 """
 
-# 구글 API 권장 신규 모델 호출
 response = client.models.generate_content(
-    model="gemini-3.8-flash",
+    model=available_model,
     contents=prompt,
 )
 
