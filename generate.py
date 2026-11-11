@@ -1,10 +1,10 @@
 import os
 import json
-import urllib.request
+import requests
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-# KST 오늘 날짜
+# KST 기준 오늘 날짜
 kst = ZoneInfo("Asia/Seoul")
 today_str = datetime.now(kst).strftime("%Y-%m-%d")
 
@@ -42,33 +42,36 @@ prompt_text = f"""
 }}
 """
 
-# 구글 API 직접 호출 (SDK 버전 이슈 및 재시도 프리징 원천 차단)
-# 에러 메시지에서 요구한 gemini-3.8-flash 우선 시도
-models_to_try = ["gemini-3.8-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+payload = {
+    "contents": [{"parts": [{"text": prompt_text}]}],
+    "generationConfig": {
+        "response_mime_type": "application/json"
+    }
+}
+
+# 후보 모델 목록
+models_to_try = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.5-flash"]
 raw_text = ""
 
 for model_name in models_to_try:
-    url = f"[https://generativelanguage.googleapis.com/v1beta/models/](https://generativelanguage.googleapis.com/v1beta/models/){model_name}:generateContent?key={api_key}"
-    payload = {
-        "contents": [{"parts": [{"text": prompt_text}]}],
-        "generationConfig": {
-            "response_mime_type": "application/json"
-        }
-    }
-    req = urllib.request.Request(
-        url,
-        data=json.dumps(payload).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
-        method="POST"
-    )
+    url = f"[https://generativelanguage.googleapis.com/v1beta/models/](https://generativelanguage.googleapis.com/v1beta/models/){model_name}:generateContent"
     try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            res_data = json.loads(resp.read().decode("utf-8"))
+        resp = requests.post(
+            url,
+            params={"key": api_key},
+            headers={"Content-Type": "application/json"},
+            json=payload,
+            timeout=30
+        )
+        if resp.status_code == 200:
+            res_data = resp.json()
             raw_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
             print(f"성공 모델: {model_name}")
             break
+        else:
+            print(f"모델 {model_name} HTTP {resp.status_code}: {resp.text}")
     except Exception as err:
-        print(f"모델 {model_name} 실패: {err}")
+        print(f"모델 {model_name} 연결 에러: {err}")
         continue
 
 if not raw_text:
