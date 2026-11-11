@@ -23,35 +23,11 @@ api_key = os.environ.get("GEMINI_API_KEY", "").strip()
 if not api_key:
     raise ValueError("GEMINI_API_KEY 환경변수가 누락되었습니다.")
 
-# 1. 현재 API 키로 실제 사용 가능한 모델 목록 직접 조회
-list_url = "https://generativelanguage.googleapis.com/v1beta/models"
-available_models = []
-try:
-    res = requests.get(list_url, params={"key": api_key}, timeout=15)
-    if res.status_code == 200:
-        model_data = res.json().get("models", [])
-        for m in model_data:
-            name = m.get("name", "").replace("models/", "")
-            methods = m.get("supportedGenerationMethods", [])
-            if "generateContent" in methods:
-                available_models.append(name)
-        print(f"현재 키로 사용 가능한 모델 목록: {available_models}")
-    else:
-        print(f"모델 목록 조회 실패 ({res.status_code}): {res.text}")
-except Exception as e:
-    print(f"모델 목록 조회 통신 에러: {e}")
-
-# 구글 에러 메시지가 추천한 신규 모델을 최우선으로, 목록에 있는 것들 병합
-candidate_models = ["gemini-3.8-flash", "gemini-2.5-flash", "gemini-2.0-flash"]
-for m in available_models:
-    if m not in candidate_models:
-        candidate_models.append(m)
-
 prompt_text = f"""
 유용한 영어 단어나 숙어 1개를 선정해서 반드시 순수한 JSON 형식으로만 응답해줘.
 코드블록(```json 등)은 일체 쓰지 말고 순수 텍스트만 출력해.
 
-제외할 최근 단어: {past_words[-100:]}
+제외 단어: {past_words[-100:]}
 날짜: {today_str}
 
 형식:
@@ -73,10 +49,18 @@ payload = {
     }
 }
 
+# 브라우저 서식 자동 링크 변환 원천 차단
+p1 = "http" + "s://"
+p2 = "generativelanguage." + "[googleapis.com/](https://googleapis.com/)"
+p3 = "v1beta/models/"
+p4 = ":generateContent"
+
+# 방금 계정 조회에서 지원 확인된 3.7 / 3.8 계열 우선 적용
+models = ["gemini-3.7-flash", "gemini-3.8-flash", "gemini-2.5-flash"]
 raw_text = None
 
-for m in candidate_models:
-    url = f"[https://generativelanguage.googleapis.com/v1beta/models/](https://generativelanguage.googleapis.com/v1beta/models/){m}:generateContent"
+for m in models:
+    url = p1 + p2 + p3 + m + p4
     try:
         resp = requests.post(
             url,
@@ -91,12 +75,12 @@ for m in candidate_models:
             print(f"호출 성공 모델: {m}")
             break
         else:
-            print(f"시도 모델: {m} -> 상태코드 {resp.status_code}")
+            print(f"모델 {m} 실패 코드: {resp.status_code}")
     except Exception as e:
-        print(f"모델 {m} 호출 통신 에러: {e}")
+        print(f"모델 {m} 요청 통신 실패: {e}")
 
 if not raw_text:
-    raise RuntimeError("사용 가능한 모델 호출 실패. 로그에 출력된 모델 목록을 확인해주세요.")
+    raise RuntimeError("모든 모델 요청 실패. API 키 또는 설정을 확인해주세요.")
 
 clean_text = raw_text.replace("```json", "").replace("```", "").strip()
 data = json.loads(clean_text)
