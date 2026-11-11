@@ -49,14 +49,16 @@ payload = {
     }
 }
 
-models_to_try = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+# 온전한 단일 문자열로 엔드포인트 지정 (서식 섞임 원천 차단)
+base_url = "[https://generativelanguage.googleapis.com/v1beta/models/](https://generativelanguage.googleapis.com/v1beta/models/){}:generateContent"
+models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
 raw_text = ""
 
-for model_name in models_to_try:
-    endpoint = "[https://generativelanguage.googleapis.com/v1beta/models/](https://generativelanguage.googleapis.com/v1beta/models/)" + model_name + ":generateContent"
+for m in models:
+    url = base_url.format(m)
     try:
         resp = requests.post(
-            endpoint,
+            url,
             params={"key": api_key},
             headers={"Content-Type": "application/json"},
             json=payload,
@@ -65,27 +67,7 @@ for model_name in models_to_try:
         if resp.status_code == 200:
             res_data = resp.json()
             raw_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
-            print(f"성공 모델: {model_name}")
+            print(f"성공 모델: {m}")
             break
         else:
-            print(f"모델 {model_name} 실패 (상태코드 {resp.status_code}): {resp.text}")
-    except Exception as err:
-        print(f"모델 {model_name} 통신 에러: {err}")
-        continue
-
-if not raw_text:
-    raise RuntimeError("모든 모델 호출에 실패했습니다. API 키 권한 또는 설정을 확인해주세요.")
-
-clean_text = raw_text.replace("```json", "").replace("```", "").strip()
-data = json.loads(clean_text)
-
-# today.json 저장
-with open("today.json", "w", encoding="utf-8") as f:
-    json.dump(data, f, ensure_ascii=False, indent=2)
-
-# archive.json 누적
-archive.append(data)
-with open("archive.json", "w", encoding="utf-8") as f:
-    json.dump(archive, f, ensure_ascii=False, indent=2)
-
-print(f"[{today_str}] 생성 완료: {data.get('word')}")
+            print(f"모델 {m} 실패 ({resp.status_code}): {resp.text}")
