@@ -4,11 +4,11 @@ import requests
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-# KST 기준 오늘 날짜
+# KST 기준 오늘 날짜 구하기
 kst = ZoneInfo("Asia/Seoul")
 today_str = datetime.now(kst).strftime("%Y-%m-%d")
 
-# 기존 히스토리 불러오기
+# 기존 히스토리 불러오기 (중복 방지용)
 archive = []
 if os.path.exists("archive.json"):
     try:
@@ -21,13 +21,13 @@ past_words = [item.get("word", "").lower() for item in archive if isinstance(ite
 
 api_key = os.environ.get("GEMINI_API_KEY", "").strip()
 if not api_key:
-    raise ValueError("GEMINI_API_KEY 환경변수가 설정되지 않았습니다.")
+    raise ValueError("GEMINI_API_KEY가 없습니다.")
 
 prompt_text = f"""
-유용한 영어 단어나 숙어 1개를 선정해서 반드시 순수 JSON 텍스트로만 응답해줘.
-코드블록(```json 등)은 일체 포함하지 마.
+유용한 영어 단어나 숙어 1개를 선정해서 반드시 순수한 JSON 형식으로만 응답해줘.
+코드블록(```json 등)은 일체 쓰지 말고 순수 텍스트만 출력해.
 
-제외할 최근 단어: {past_words[-100:]}
+제외 단어: {past_words[-100:]}
 날짜: {today_str}
 
 형식:
@@ -49,13 +49,12 @@ payload = {
     }
 }
 
-# 온전한 단일 문자열로 엔드포인트 지정 (서식 섞임 원천 차단)
-base_url = "[https://generativelanguage.googleapis.com/v1beta/models/](https://generativelanguage.googleapis.com/v1beta/models/){}:generateContent"
+# 후보 모델 목록 순차 호출
 models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
-raw_text = ""
+raw_text = None
 
 for m in models:
-    url = base_url.format(m)
+    url = f"[https://generativelanguage.googleapis.com/v1beta/models/](https://generativelanguage.googleapis.com/v1beta/models/){m}:generateContent"
     try:
         resp = requests.post(
             url,
@@ -65,9 +64,28 @@ for m in models:
             timeout=30
         )
         if resp.status_code == 200:
-            res_data = resp.json()
-            raw_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
-            print(f"성공 모델: {m}")
+            res_json = resp.json()
+            raw_text = res_json["candidates"][0]["content"]["parts"][0]["text"]
+            print(f"호출 성공 모델: {m}")
             break
         else:
-            print(f"모델 {m} 실패 ({resp.status_code}): {resp.text}")
+            print(f"모델 {m} 응답 코드: {resp.status_code}")
+    except Exception as e:
+        print(f"모델 {m} 요청 실패: {e}")
+
+if not raw_text:
+    raise RuntimeError("모든 모델 요청 실패. API 키 또는 네트워크를 확인하세요.")
+
+clean_text = raw_text.replace("```json", "").replace("```", "").strip()
+data = json.loads(clean_text)
+
+# today.json 저장
+with open("today.json", "w", encoding="utf-8") as f:
+    json.dump(data, f, ensure_ascii=False, indent=2)
+
+# archive.json 누적 저장
+archive.append(data)
+with open("archive.json", "w", encoding="utf-8") as f:
+    json.dump(archive, f, ensure_ascii=False, indent=2)
+
+print(f"[{today_str}] 생성 완료: {data.get('word')}")
