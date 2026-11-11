@@ -1,5 +1,6 @@
 import os
 import json
+import time
 import requests
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -8,7 +9,7 @@ from zoneinfo import ZoneInfo
 kst = ZoneInfo("Asia/Seoul")
 today_str = datetime.now(kst).strftime("%Y-%m-%d")
 
-# 기존 히스토리 불러오기 (중복 방지용)
+# 기존 히스토리 불러오기
 archive = []
 if os.path.exists("archive.json"):
     try:
@@ -49,35 +50,50 @@ payload = {
     }
 }
 
-# 브라우저의 도메인 자동 하이퍼링크 변환을 원천 봉쇄하는 조각 조립
 host = "".join(["gene", "rative", "language", ".", "google", "apis", ".", "com"])
 
-# 회원님 계정의 ListModels 결과에서 확인된 실제 지원 모델
-models = ["gemini-3.7-flash", "gemini-3.8-flash"]
+# 트래픽 분산을 위해 사용 가능한 모델 다변화
+models = [
+    "gemini-3.7-flash",
+    "gemini-3.8-flash",
+    "gemini-3.8-flash-lite",
+    "gemini-3.1-flash-preview",
+    "gemini-2.5-flash"
+]
 raw_text = None
 
+# 모델별 2회씩 재시도 순회
 for m in models:
     url = f"https://{host}/v1beta/models/{m}:generateContent"
-    try:
-        resp = requests.post(
-            url,
-            params={"key": api_key},
-            headers={"Content-Type": "application/json"},
-            json=payload,
-            timeout=30
-        )
-        if resp.status_code == 200:
-            res_json = resp.json()
-            raw_text = res_json["candidates"][0]["content"]["parts"][0]["text"]
-            print(f"호출 성공 모델: {m}")
+    for attempt in range(2):
+        try:
+            resp = requests.post(
+                url,
+                params={"key": api_key},
+                headers={"Content-Type": "application/json"},
+                json=payload,
+                timeout=30
+            )
+            if resp.status_code == 200:
+                res_json = resp.json()
+                raw_text = res_json["candidates"][0]["content"]["parts"][0]["text"]
+                print(f"호출 성공 모델: {m}")
+                break
+            elif resp.status_code == 503:
+                print(f"모델 {m} 503 일시적 과부하 발생, 3초 대기 후 재시도...")
+                time.sleep(3)
+            else:
+                print(f"모델 {m} 실패 코드: {resp.status_code}")
+                break
+        except Exception as e:
+            print(f"모델 {m} 통신 에러: {e}")
             break
-        else:
-            print(f"모델 {m} 응답 코드: {resp.status_code}, 상세: {resp.text}")
-    except Exception as e:
-        print(f"모델 {m} 통신 에러: {e}")
+            
+    if raw_text:
+        break
 
 if not raw_text:
-    raise RuntimeError("모델 호출 실패. 키 또는 권한을 확인하세요.")
+    raise RuntimeError("모든 모델 일시 과부하 또는 실패. 잠시 후 재실행해주세요.")
 
 clean_text = raw_text.replace("```json", "").replace("```", "").strip()
 data = json.loads(clean_text)
