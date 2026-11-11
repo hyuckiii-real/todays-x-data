@@ -20,9 +20,6 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: 최신 Google GenAI 패키지 설치
-        run: pip install google-genai
-
       - name: 스크립트 실행
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
