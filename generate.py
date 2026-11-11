@@ -8,7 +8,7 @@ from zoneinfo import ZoneInfo
 kst = ZoneInfo("Asia/Seoul")
 today_str = datetime.now(kst).strftime("%Y-%m-%d")
 
-# 기존 히스토리 불러오기
+# 기존 히스토리 불러오기 (중복 방지용)
 archive = []
 if os.path.exists("archive.json"):
     try:
@@ -49,18 +49,15 @@ payload = {
     }
 }
 
-# 브라우저 서식 자동 링크 변환 원천 차단
-p1 = "http" + "s://"
-p2 = "generativelanguage." + "[googleapis.com/](https://googleapis.com/)"
-p3 = "v1beta/models/"
-p4 = ":generateContent"
+# 브라우저의 도메인 자동 하이퍼링크 변환을 원천 봉쇄하는 조각 조립
+host = "".join(["gene", "rative", "language", ".", "google", "apis", ".", "com"])
 
-# 방금 계정 조회에서 지원 확인된 3.7 / 3.8 계열 우선 적용
-models = ["gemini-3.7-flash", "gemini-3.8-flash", "gemini-2.5-flash"]
+# 회원님 계정의 ListModels 결과에서 확인된 실제 지원 모델
+models = ["gemini-3.7-flash", "gemini-3.8-flash"]
 raw_text = None
 
 for m in models:
-    url = p1 + p2 + p3 + m + p4
+    url = f"https://{host}/v1beta/models/{m}:generateContent"
     try:
         resp = requests.post(
             url,
@@ -75,12 +72,12 @@ for m in models:
             print(f"호출 성공 모델: {m}")
             break
         else:
-            print(f"모델 {m} 실패 코드: {resp.status_code}")
+            print(f"모델 {m} 응답 코드: {resp.status_code}, 상세: {resp.text}")
     except Exception as e:
-        print(f"모델 {m} 요청 통신 실패: {e}")
+        print(f"모델 {m} 통신 에러: {e}")
 
 if not raw_text:
-    raise RuntimeError("모든 모델 요청 실패. API 키 또는 설정을 확인해주세요.")
+    raise RuntimeError("모델 호출 실패. 키 또는 권한을 확인하세요.")
 
 clean_text = raw_text.replace("```json", "").replace("```", "").strip()
 data = json.loads(clean_text)
