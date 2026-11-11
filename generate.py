@@ -4,7 +4,7 @@ import requests
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-# KST 오늘 날짜
+# KST 오늘 날짜 구하기
 kst = ZoneInfo("Asia/Seoul")
 today_str = datetime.now(kst).strftime("%Y-%m-%d")
 
@@ -49,12 +49,12 @@ payload = {
     }
 }
 
-# 브라우저 서식 자동 변환을 방지하기 위해 도메인을 문자열 조각으로 결합
 scheme = "https"
 domain = "generativelanguage.googleapis.com"
 api_path = "v1beta/models"
 
-models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+# 1번 에러 로그에서 지정한 gemini-3.8-flash를 1순위로 배치
+models = ["gemini-3.8-flash", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
 raw_text = None
 
 for m in models:
@@ -74,8 +74,9 @@ for m in models:
             break
         else:
             print(f"모델 {m} 응답 코드: {resp.status_code}")
+            print(f"상세 에러 내용: {resp.text}")
     except Exception as e:
-        print(f"모델 {m} 요청 실패: {e}")
+        print(f"모델 {m} 요청 통신 실패: {e}")
 
 if not raw_text:
     raise RuntimeError("모든 모델 요청 실패. API 키 또는 설정을 확인하세요.")
