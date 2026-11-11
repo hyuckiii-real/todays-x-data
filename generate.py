@@ -4,11 +4,11 @@ import requests
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-# KST 기준 오늘 날짜 구하기
+# KST 오늘 날짜
 kst = ZoneInfo("Asia/Seoul")
 today_str = datetime.now(kst).strftime("%Y-%m-%d")
 
-# 기존 히스토리 불러오기 (중복 방지용)
+# 기존 히스토리 불러오기
 archive = []
 if os.path.exists("archive.json"):
     try:
@@ -21,7 +21,7 @@ past_words = [item.get("word", "").lower() for item in archive if isinstance(ite
 
 api_key = os.environ.get("GEMINI_API_KEY", "").strip()
 if not api_key:
-    raise ValueError("GEMINI_API_KEY가 없습니다.")
+    raise ValueError("GEMINI_API_KEY 환경변수가 누락되었습니다.")
 
 prompt_text = f"""
 유용한 영어 단어나 숙어 1개를 선정해서 반드시 순수한 JSON 형식으로만 응답해줘.
@@ -49,12 +49,16 @@ payload = {
     }
 }
 
-# 후보 모델 목록 순차 호출
+# 브라우저 서식 자동 변환을 방지하기 위해 도메인을 문자열 조각으로 결합
+scheme = "https"
+domain = "generativelanguage.googleapis.com"
+api_path = "v1beta/models"
+
 models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
 raw_text = None
 
 for m in models:
-    url = f"[https://generativelanguage.googleapis.com/v1beta/models/](https://generativelanguage.googleapis.com/v1beta/models/){m}:generateContent"
+    url = f"{scheme}://{domain}/{api_path}/{m}:generateContent"
     try:
         resp = requests.post(
             url,
@@ -74,7 +78,7 @@ for m in models:
         print(f"모델 {m} 요청 실패: {e}")
 
 if not raw_text:
-    raise RuntimeError("모든 모델 요청 실패. API 키 또는 네트워크를 확인하세요.")
+    raise RuntimeError("모든 모델 요청 실패. API 키 또는 설정을 확인하세요.")
 
 clean_text = raw_text.replace("```json", "").replace("```", "").strip()
 data = json.loads(clean_text)
