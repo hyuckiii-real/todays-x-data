@@ -2,7 +2,8 @@ name: Daily Word Generator
 
 on:
   schedule:
-    - cron: '0 15 * * *'
+    # 한국 시간(KST) 매일 00시 18분에 자동 실행 (정각 트래픽 회피)
+    - cron: '18 15 * * *'
   workflow_dispatch:
 
 jobs:
