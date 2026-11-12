@@ -24,9 +24,44 @@ api_key = os.environ.get("GEMINI_API_KEY", "").strip()
 if not api_key:
     raise ValueError("GEMINI_API_KEY 환경변수가 누락되었습니다.")
 
+host = "".join(["gene", "rative", "language", ".", "google", "apis", ".", "com"])
+
+# 1. 현재 무료 키에서 실제 호출 가능한 generateContent 모델 목록 조회
+available_models = []
+try:
+    list_url = f"https://{host}/v1beta/models"
+    res = requests.get(list_url, params={"key": api_key}, timeout=15)
+    if res.status_code == 200:
+        for m in res.json().get("models", []):
+            name = m.get("name", "").replace("models/", "")
+            methods = m.get("supportedGenerationMethods", [])
+            if "generateContent" in methods:
+                # 이미지, 임베딩, 비디오 전용 모델 제외
+                if not any(x in name for x in ["imagen", "veo", "embedding", "aqa"]):
+                    available_models.append(name)
+        print(f"계정 지원 모델 목록: {available_models}")
+except Exception as e:
+    print(f"목록 조회 실패: {e}")
+
+# 트래픽이 적고 빠른 경량 모델(lite, gemma 등)을 우선순위로 정렬
+priority_keywords = ["lite", "gemma", "3.7-flash", "3.8-flash", "flash"]
+sorted_models = []
+for kw in priority_keywords:
+    for m in available_models:
+        if kw in m and m not in sorted_models:
+            sorted_models.append(m)
+
+# 나머지 사용 가능 모델 추가
+for m in available_models:
+    if m not in sorted_models:
+        sorted_models.append(m)
+
+if not sorted_models:
+    sorted_models = ["gemini-3.8-flash-lite", "gemini-3.7-flash", "gemini-3.8-flash"]
+
 prompt_text = f"""
 유용한 영어 단어나 숙어 1개를 선정해서 반드시 순수한 JSON 형식으로만 응답해줘.
-코드블록(```json 등)은 일체 쓰지 말고 순수 텍스트만 출력해.
+코드블록(```json 등)은 일체 쓰지 말고 순수 JSON 텍스트만 출력해.
 
 제외 단어: {past_words[-100:]}
 날짜: {today_str}
@@ -43,85 +78,45 @@ prompt_text = f"""
 }}
 """
 
-host = "".join(["gene", "rative", "language", ".", "google", "apis", ".", "com"])
-raw_text = None
-
-# 1단계: 503 회피용 최신 Interactions API 우선 호출 시도
-print("1단계: Interactions API 호출 시도...")
-interaction_url = f"https://{host}/v1beta/interactions"
-interaction_payload = {
-    "model": "gemini-3.8-flash",
-    "input": prompt_text,
-    "generation_config": {
-        "response_mime_type": "application/json"
-    }
+payload = {
+    "contents": [{"parts": [{"text": prompt_text}]}]
 }
 
-try:
-    resp = requests.post(
-        interaction_url,
-        params={"key": api_key},
-        headers={"Content-Type": "application/json"},
-        json=interaction_payload,
-        timeout=30
-    )
-    if resp.status_code == 200:
-        res_json = resp.json()
-        # Interactions 규격 응답 파싱
-        if "candidates" in res_json:
+raw_text = None
+
+# 2. 경량 모델부터 순차 호출 (과부하 503 회피)
+for model in sorted_models:
+    url = f"https://{host}/v1beta/models/{model}:generateContent"
+    print(f"[{model}] 호출 시도...")
+    try:
+        resp = requests.post(
+            url,
+            params={"key": api_key},
+            headers={"Content-Type": "application/json"},
+            json=payload,
+            timeout=25
+        )
+        if resp.status_code == 200:
+            res_json = resp.json()
             raw_text = res_json["candidates"][0]["content"]["parts"][0]["text"]
-        elif "output" in res_json:
-            raw_text = res_json["output"]
-        print("Interactions API 호출 성공!")
-except Exception as e:
-    print(f"Interactions API 경유 실패, 기존 generateContent 파이프라인으로 전환: {e}")
-
-# 2단계: 실패 시 사용 가능한 실존 모델 목록 순차 호출 (재시도 간격 10초)
-if not raw_text:
-    print("2단계: generateContent 모델별 순차 호출 시작...")
-    active_models = ["gemini-3.8-flash", "gemini-3.7-flash"]
-    generate_payload = {
-        "contents": [{"parts": [{"text": prompt_text}]}],
-        "generationConfig": {
-            "response_mime_type": "application/json"
-        }
-    }
-
-    for model in active_models:
-        url = f"https://{host}/v1beta/models/{model}:generateContent"
-        for attempt in range(1, 4):
-            try:
-                print(f"[{model}] 호출 시도 {attempt}/3...")
-                resp = requests.post(
-                    url,
-                    params={"key": api_key},
-                    headers={"Content-Type": "application/json"},
-                    json=generate_payload,
-                    timeout=30
-                )
-                if resp.status_code == 200:
-                    res_json = resp.json()
-                    raw_text = res_json["candidates"][0]["content"]["parts"][0]["text"]
-                    print(f"호출 성공: {model}")
-                    break
-                elif resp.status_code in [429, 503]:
-                    wait_sec = attempt * 8
-                    print(f"[{model}] 일시적 과부하 ({resp.status_code}). {wait_sec}초 대기...")
-                    time.sleep(wait_sec)
-                else:
-                    print(f"[{model}] 응답 코드 {resp.status_code}: {resp.text}")
-                    break
-            except Exception as e:
-                print(f"[{model}] 통신 오류: {e}")
-                time.sleep(3)
-
-        if raw_text:
+            print(f"호출 성공 모델: {model}")
             break
+        else:
+            print(f"[{model}] 실패 ({resp.status_code}) -> 다음 모델로 즉시 전환")
+            time.sleep(2)
+    except Exception as e:
+        print(f"[{model}] 지연/에러 -> 다음 모델로 즉시 전환: {e}")
 
 if not raw_text:
-    raise RuntimeError("모든 API 및 모델 호출 실패. 구글 AI Studio 상태를 확인해주세요.")
+    raise RuntimeError("모든 지원 모델 호출에 실패했습니다.")
 
+# 응답 텍스트에서 순수 JSON 객체만 추출
 clean_text = raw_text.replace("```json", "").replace("```", "").strip()
+start_idx = clean_text.find("{")
+end_idx = clean_text.rfind("}")
+if start_idx != -1 and end_idx != -1:
+    clean_text = clean_text[start_idx:end_idx + 1]
+
 data = json.loads(clean_text)
 
 with open("today.json", "w", encoding="utf-8") as f:
