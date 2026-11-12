@@ -5,9 +5,11 @@ import requests
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+# KST 오늘 날짜 구하기
 kst = ZoneInfo("Asia/Seoul")
 today_str = datetime.now(kst).strftime("%Y-%m-%d")
 
+# 기존 히스토리 불러오기
 archive = []
 if os.path.exists("archive.json"):
     try:
@@ -49,21 +51,31 @@ payload = {
 }
 
 host = "".join(["gene", "rative", "language", ".", "google", "apis", ".", "com"])
-target_models = ["gemini-3.8-flash", "gemini-3.7-flash"]
+
+# 503 과부하 회피용 다중 백업 모델군 (우선순위 순서대로 시도)
+target_models = [
+    "gemini-3.8-flash",
+    "gemini-3.7-flash",
+    "gemini-2.5-flash",
+    "gemini-2.0-flash",
+    "gemini-1.5-flash"
+]
+
 raw_text = None
 
-# 타임아웃 30초로 제한 (무한 지연 방지), 503 발생 시 점진적 대기(지수 백오프)
 for model in target_models:
     url = f"https://{host}/v1beta/models/{model}:generateContent"
-    for attempt in range(1, 4):
+    print(f"[{model}] 호출 시도 중...")
+    
+    # 모델당 최대 2회 시도
+    for attempt in range(1, 3):
         try:
-            print(f"[{model}] 호출 시도 {attempt}/3...")
             resp = requests.post(
                 url,
                 params={"key": api_key},
                 headers={"Content-Type": "application/json"},
                 json=payload,
-                timeout=30
+                timeout=25
             )
             if resp.status_code == 200:
                 res_json = resp.json()
@@ -71,31 +83,37 @@ for model in target_models:
                 print(f"호출 성공: {model}")
                 break
             elif resp.status_code in [429, 503]:
-                wait_sec = attempt * 7
-                print(f"일시적 과부하 ({resp.status_code}). {wait_sec}초 대기 후 재시도...")
-                time.sleep(wait_sec)
+                print(f"[{model}] 과부하({resp.status_code}). 3초 후 재시도 또는 다음 모델로 전환...")
+                time.sleep(3)
+            elif resp.status_code == 404:
+                # 계정에서 지원하지 않는 구형 모델은 즉시 다음 모델로 패스
+                print(f"[{model}] 미지원 모델 (404), 다음 모델 탐색.")
+                break
             else:
-                print(f"실패 코드 {resp.status_code}: {resp.text}")
+                print(f"[{model}] 응답 코드 {resp.status_code}: {resp.text}")
                 break
         except requests.exceptions.Timeout:
-            print(f"[{model}] 타임아웃(30초 초과). 재시도 준비...")
-            time.sleep(3)
+            print(f"[{model}] 타임아웃, 다음 시도 진행...")
+            time.sleep(2)
         except Exception as e:
-            print(f"통신 에러: {e}")
+            print(f"[{model}] 통신 오류: {e}")
             break
 
     if raw_text:
         break
 
 if not raw_text:
-    raise RuntimeError("모든 모델 호출에 실패했습니다. 잠시 후 다시 실행해 주세요.")
+    raise RuntimeError("모든 백업 모델 호출에 실패했습니다. 잠시 후 다시 실행해 주세요.")
 
+# 마크다운 코드블록이나 불필요한 줄바꿈 제거
 clean_text = raw_text.replace("```json", "").replace("```", "").strip()
 data = json.loads(clean_text)
 
+# today.json 저장
 with open("today.json", "w", encoding="utf-8") as f:
     json.dump(data, f, ensure_ascii=False, indent=2)
 
+# archive.json 누적 저장
 archive.append(data)
 with open("archive.json", "w", encoding="utf-8") as f:
     json.dump(archive, f, ensure_ascii=False, indent=2)
