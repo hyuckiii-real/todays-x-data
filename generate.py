@@ -52,42 +52,43 @@ host = "".join(["gene", "rative", "language", ".", "google", "apis", ".", "com"]
 target_models = ["gemini-3.8-flash", "gemini-3.7-flash"]
 raw_text = None
 
-# 타임아웃을 90초로 확장하고 최대 3회 재시도
+# 타임아웃 30초로 제한 (무한 지연 방지), 503 발생 시 점진적 대기(지수 백오프)
 for model in target_models:
     url = f"https://{host}/v1beta/models/{model}:generateContent"
-    for attempt in range(3):
+    for attempt in range(1, 4):
         try:
-            print(f"[{model}] 호출 시도 {attempt + 1}/3...")
+            print(f"[{model}] 호출 시도 {attempt}/3...")
             resp = requests.post(
                 url,
                 params={"key": api_key},
                 headers={"Content-Type": "application/json"},
                 json=payload,
-                timeout=90
+                timeout=30
             )
             if resp.status_code == 200:
                 res_json = resp.json()
                 raw_text = res_json["candidates"][0]["content"]["parts"][0]["text"]
-                print(f"호출 성공 모델: {model}")
+                print(f"호출 성공: {model}")
                 break
-            elif resp.status_code in [503, 429]:
-                print(f"일시적 부하 발생 ({resp.status_code}), 5초 대기...")
-                time.sleep(5)
+            elif resp.status_code in [429, 503]:
+                wait_sec = attempt * 7
+                print(f"일시적 과부하 ({resp.status_code}). {wait_sec}초 대기 후 재시도...")
+                time.sleep(wait_sec)
             else:
                 print(f"실패 코드 {resp.status_code}: {resp.text}")
                 break
         except requests.exceptions.Timeout:
-            print(f"[{model}] 타임아웃 발생, 재시도 대기...")
+            print(f"[{model}] 타임아웃(30초 초과). 재시도 준비...")
             time.sleep(3)
         except Exception as e:
             print(f"통신 에러: {e}")
             break
-            
+
     if raw_text:
         break
 
 if not raw_text:
-    raise RuntimeError("모든 시도 실패. 잠시 후 다시 실행해 주세요.")
+    raise RuntimeError("모든 모델 호출에 실패했습니다. 잠시 후 다시 실행해 주세요.")
 
 clean_text = raw_text.replace("```json", "").replace("```", "").strip()
 data = json.loads(clean_text)
