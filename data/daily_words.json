@@ -1,7 +1,39 @@
 {
   "app_type": "english_word",
-  "updated_at": "2026-11-17",
+  "updated_at": "2026-11-18",
   "items": [
+    {
+      "id": 2,
+      "date": "2026-11-18",
+      "category": "비즈니스 어휘",
+      "title": "Substantiate",
+      "subtitle": "입증하다, 실체화하다",
+      "summary": "어떤 주장이나 이론이 사실임을 증거를 통해 뒷받침하거나 증명하는 것을 의미합니다.",
+      "payload": {
+        "part_of_speech": "동사",
+        "examples": [
+          {
+            "en": "The evidence was not sufficient to substantiate his claims.",
+            "ko": "그 증거는 그의 주장을 입증하기에 충분하지 않았다."
+          },
+          {
+            "en": "We need to substantiate our project proposal with more market data.",
+            "ko": "우리는 시장 데이터를 더 확보하여 프로젝트 제안서를 뒷받침해야 한다."
+          }
+        ],
+        "synonyms": [
+          "verify",
+          "corroborate",
+          "validate",
+          "authenticate"
+        ],
+        "quiz_distractors": [
+          "대체하다",
+          "지연하다",
+          "강화하다"
+        ]
+      }
+    },
     {
       "id": 1,
       "date": "2026-11-17",
