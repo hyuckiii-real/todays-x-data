@@ -44,10 +44,10 @@ if any(item["date"] == today_str for item in db["items"]):
 
 existing_words = [item["title"] for item in db["items"]]
 
-# 4. Gemini API 호출 (30초 타임아웃 적용으로 무한 대기 방지)
+# 4. Gemini API 호출 (30초 타임아웃 + 503 과부하 대비 5회 재시도)
 client = genai.Client(
     api_key=os.environ["GEMINI_API_KEY"],
-    http_options=types.HttpOptions(timeout=30000)  # 30초 초과 시 즉시 중단
+    http_options=types.HttpOptions(timeout=30000)
 )
 
 prompt = f"""
@@ -57,26 +57,29 @@ prompt = f"""
 - quiz_distractors에는 정답(summary)과 품사는 비슷하지만 뜻이 완전히 다른 한국어 오답 보기 3개를 작성하세요.
 """
 
-models_to_try = ["gemini-3.8-flash-lite", "gemini-3.8-flash"]
+models_to_try = ["gemini-3.8-flash", "gemini-3.8-pro"]
 response = None
 
-for model_name in models_to_try:
-    try:
-        print(f"[{model_name}] 모델 호출 시작...", flush=True)
-        response = client.models.generate_content(
-            model=model_name,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                response_schema=DailyWordItem,
-                temperature=0.7,
-            ),
-        )
-        print(f"[{model_name}] 모델 호출 성공!", flush=True)
+for attempt in range(1, 6):
+    for model_name in models_to_try:
+        try:
+            print(f"[시도 {attempt}/5 - {model_name}] 모델 호출 시작...", flush=True)
+            response = client.models.generate_content(
+                model=model_name,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_schema=DailyWordItem,
+                    temperature=0.7,
+                ),
+            )
+            print(f"[{model_name}] 모델 호출 성공!", flush=True)
+            break
+        except Exception as e:
+            print(f"[{model_name}] 실패: {e}", flush=True)
+            time.sleep(3)
+    if response:
         break
-    except Exception as e:
-        print(f"[{model_name}] 호출 실패: {e}", flush=True)
-        time.sleep(2)
 
 if not response:
     raise RuntimeError("모든 모델 호출 시도가 실패했습니다.")
