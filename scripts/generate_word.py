@@ -44,11 +44,26 @@ if any(item["date"] == today_str for item in db["items"]):
 
 existing_words = [item["title"] for item in db["items"]]
 
-# 4. Gemini API 호출 (30초 타임아웃 + 503 과부하 대비 5회 재시도)
+# 4. 사용 가능한 모델 자동 탐색 및 호출
 client = genai.Client(
     api_key=os.environ["GEMINI_API_KEY"],
-    http_options=types.HttpOptions(timeout=30000)
+    http_options=types.HttpOptions(timeout=45000)
 )
+
+available_models = []
+try:
+    for m in client.models.list():
+        name = m.name.replace("models/", "")
+        if "gemini" in name and "embedding" not in name and "imagen" not in name and "veo" not in name:
+            available_models.append(name)
+    print(f"현재 API 키로 호출 가능한 모델 목록: {available_models}", flush=True)
+except Exception as e:
+    print(f"모델 목록 조회 실패: {e}", flush=True)
+
+# 우선순위 정렬: flash 계열 먼저, 그다음 pro 계열
+priority_models = [m for m in available_models if "flash" in m] + [m for m in available_models if "pro" in m]
+if not priority_models:
+    priority_models = ["gemini-3.8-flash"]
 
 prompt = f"""
 한국인 성인 학습자를 위한 '오늘의 영단어' 1개를 선정해 주세요.
@@ -57,13 +72,11 @@ prompt = f"""
 - quiz_distractors에는 정답(summary)과 품사는 비슷하지만 뜻이 완전히 다른 한국어 오답 보기 3개를 작성하세요.
 """
 
-models_to_try = ["gemini-3.8-flash", "gemini-3.8-pro"]
 response = None
-
-for attempt in range(1, 6):
-    for model_name in models_to_try:
+for attempt in range(1, 4):
+    for model_name in priority_models[:4]:  # 상위 4개 후보 모델 순회
         try:
-            print(f"[시도 {attempt}/5 - {model_name}] 모델 호출 시작...", flush=True)
+            print(f"[시도 {attempt}/3 - {model_name}] 호출 시작...", flush=True)
             response = client.models.generate_content(
                 model=model_name,
                 contents=prompt,
