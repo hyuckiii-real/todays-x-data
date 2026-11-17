@@ -1,86 +1,112 @@
-import json
 import os
-from datetime import datetime, timezone, timedelta
-from google import genai
-from google.genai import types
-from pydantic import BaseModel
+import json
+import time
+import re
+import requests
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
-# 1. 응답 JSON 스키마 강제 (Pydantic)
-class ExampleSentence(BaseModel):
-    en: str
-    ko: str
+kst = ZoneInfo("Asia/Seoul")
+today_str = datetime.now(kst).strftime("%Y-%m-%d")
 
-class WordPayload(BaseModel):
-    part_of_speech: str
-    examples: list[ExampleSentence]
-    synonyms: list[str]
-    quiz_distractors: list[str]  # 4지선다용 오답 뜻 3개
+archive = []
+if os.path.exists("archive.json"):
+    try:
+        with open("archive.json", "r", encoding="utf-8") as f:
+            archive = json.load(f)
+    except Exception:
+        archive = []
 
-class DailyWordItem(BaseModel):
-    title: str          # 영단어
-    subtitle: str       # 발음기호
-    summary: str        # 핵심 뜻 (한국어)
-    category: str       # 비즈니스 / 일상 / 뉴스 등
-    payload: WordPayload
+past_words = [item.get("word", "").lower() for item in archive if isinstance(item, dict)]
 
-# 2. 한국 시간(KST) 기준 오늘 날짜 계산
-KST = timezone(timedelta(hours=9))
-today_str = datetime.now(KST).strftime("%Y-%m-%d")
+api_key = os.environ.get("GEMINI_API_KEY", "").strip()
+if not api_key:
+    raise ValueError("GEMINI_API_KEY 환경변수가 누락되었습니다.")
 
-DATA_FILE = "data/daily_words.json"
-os.makedirs("data", exist_ok=True)
+prompt_text = f"""
+유용한 영어 단어나 숙어 1개를 선정해서 반드시 유효한 순수 JSON 형식으로만 응답해줘.
+값(문자열) 내부에는 큰따옴표(")와 줄바꿈을 절대 쓰지 말고, 작은따옴표(')만 사용해.
 
-# 3. 기존 데이터 로드 (중복 방지용)
-if os.path.exists(DATA_FILE):
-    with open(DATA_FILE, "r", encoding="utf-8") as f:
-        db = json.load(f)
-else:
-    db = {"app_type": "english_word", "updated_at": "", "items": []}
+제외 단어: {past_words[-100:]}
+날짜: {today_str}
 
-# 이미 오늘 날짜 단어가 있으면 종료
-if any(item["date"] == today_str for item in db["items"]):
-    print(f"[{today_str}] 이미 오늘의 단어가 생성되어 있습니다.")
-    exit(0)
-
-existing_words = [item["title"] for item in db["items"]]
-
-# 4. Gemini API 호출
-client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
-
-prompt = f"""
-한국인 성인 학습자를 위한 '오늘의 영단어' 1개를 선정해 주세요.
-- 난이도: 토익 750~900점 수준 또는 실생활/비즈니스에서 유용하지만 헷갈리기 쉬운 세련된 어휘
-- 제외할 단어(이미 출제됨): {', '.join(existing_words[-100:])}
-- quiz_distractors에는 정답(summary)과 품사는 비슷하지만 뜻이 완전히 다른 한국어 오답 보기 3개를 작성하세요.
+형식:
+{{
+  "date": "{today_str}",
+  "word": "단어",
+  "phonetic": "/발음기호/",
+  "part_of_speech": "품사",
+  "meaning": "한국어 뜻",
+  "example_en": "영어 예문 1개",
+  "example_ko": "예문의 한국어 해석"
+}}
 """
 
-response = client.models.generate_content(
-    model="gemini-2.5-flash",
-    contents=prompt,
-    config=types.GenerateContentConfig(
-        response_mime_type="application/json",
-        response_schema=DailyWordItem,
-        temperature=0.7,
-    ),
-)
-
-generated = json.loads(response.text)
-
-# 5. 공통 규격으로 데이터 조립 및 저장
-new_entry = {
-    "id": len(db["items"]) + 1,
-    "date": today_str,
-    "category": generated["category"],
-    "title": generated["title"],
-    "subtitle": generated["subtitle"],
-    "summary": generated["summary"],
-    "payload": generated["payload"],
+payload = {
+    "contents": [{"parts": [{"text": prompt_text}]}],
+    "generationConfig": {
+        "response_mime_type": "application/json"
+    }
 }
 
-db["items"].insert(0, new_entry)  # 최신 단어가 맨 앞에 오도록 추가
-db["updated_at"] = today_str
+host = "".join(["gene", "rative", "language", ".", "google", "apis", ".", "com"])
+target_models = [
+    "gemini-2.5-flash-lite",
+    "gemini-flash-lite-latest",
+    "gemini-2.5-flash",
+    "gemini-flash-latest"
+]
 
-with open(DATA_FILE, "w", encoding="utf-8") as f:
-    json.dump(db, f, ensure_ascii=False, indent=2)
+data = None
 
-print(f"[{today_str}] 신규 단어 생성 완료: {new_entry['title']}")
+for model in target_models:
+    url = f"https://{host}/v1beta/models/{model}:generateContent"
+    for attempt in range(1, 3):
+        try:
+            print(f"[{model}] 호출 시도 {attempt}/2...")
+            resp = requests.post(
+                url,
+                params={"key": api_key},
+                headers={"Content-Type": "application/json"},
+                json=payload,
+                timeout=30
+            )
+            if resp.status_code == 200:
+                res_json = resp.json()
+                raw_text = res_json["candidates"][0]["content"]["parts"][0]["text"]
+                clean_text = raw_text.replace("```json", "").replace("```", "").strip()
+                json_match = re.search(r'\{.*\}', clean_text, re.DOTALL)
+                if json_match:
+                    clean_text = json_match.group(0)
+                # 줄바꿈 제어문자 제거 후 파싱
+                clean_text = re.sub(r'[\r\n]+', ' ', clean_text)
+                parsed = json.loads(clean_text)
+                if all(k in parsed for k in ["word", "meaning", "example_en", "example_ko"]):
+                    parsed["date"] = today_str
+                    data = parsed
+                    print(f"호출 및 JSON 파싱 성공: {model}")
+                    break
+            elif resp.status_code in [429, 503]:
+                print(f"[{model}] 일시적 부하({resp.status_code}), 4초 후 재시도...")
+                time.sleep(4)
+            else:
+                print(f"[{model}] 응답 코드 {resp.status_code}")
+                break
+        except Exception as e:
+            print(f"[{model}] 오류 발생({e}), 재시도 또는 다음 모델 전환...")
+            time.sleep(2)
+
+    if data:
+        break
+
+if not data:
+    raise RuntimeError("유효한 JSON 데이터 생성에 실패했습니다.")
+
+with open("today.json", "w", encoding="utf-8") as f:
+    json.dump(data, f, ensure_ascii=False, indent=2)
+
+archive.append(data)
+with open("archive.json", "w", encoding="utf-8") as f:
+    json.dump(archive, f, ensure_ascii=False, indent=2)
+
+print(f"[{today_str}] 생성 완료: {data.get('word')}")
