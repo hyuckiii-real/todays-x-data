@@ -38,15 +38,17 @@ if os.path.exists(DATA_FILE):
 else:
     db = {"app_type": "english_word", "updated_at": "", "items": []}
 
-# 이미 오늘 날짜 단어가 있으면 종료
 if any(item["date"] == today_str for item in db["items"]):
-    print(f"[{today_str}] 이미 오늘의 단어가 생성되어 있습니다.")
+    print(f"[{today_str}] 이미 오늘의 단어가 생성되어 있습니다.", flush=True)
     exit(0)
 
 existing_words = [item["title"] for item in db["items"]]
 
-# 4. Gemini API 호출 (503 일시 과부하 대비 자동 재시도 및 예비 모델 Fallback)
-client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+# 4. Gemini API 호출 (30초 타임아웃 적용으로 무한 대기 방지)
+client = genai.Client(
+    api_key=os.environ["GEMINI_API_KEY"],
+    http_options=types.HttpOptions(timeout=30000)  # 30초 초과 시 즉시 중단
+)
 
 prompt = f"""
 한국인 성인 학습자를 위한 '오늘의 영단어' 1개를 선정해 주세요.
@@ -55,28 +57,26 @@ prompt = f"""
 - quiz_distractors에는 정답(summary)과 품사는 비슷하지만 뜻이 완전히 다른 한국어 오답 보기 3개를 작성하세요.
 """
 
-models_to_try = ["gemini-3.8-flash", "gemini-3.8-flash-lite"]
+models_to_try = ["gemini-3.8-flash-lite", "gemini-3.8-flash"]
 response = None
 
-for attempt in range(3):
-    for model_name in models_to_try:
-        try:
-            response = client.models.generate_content(
-                model=model_name,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                    response_schema=DailyWordItem,
-                    temperature=0.7,
-                ),
-            )
-            print(f"[{model_name}] 모델 호출 성공")
-            break
-        except Exception as e:
-            print(f"[{model_name}] 시도 {attempt + 1} 실패: {e}")
-            time.sleep(5)
-    if response:
+for model_name in models_to_try:
+    try:
+        print(f"[{model_name}] 모델 호출 시작...", flush=True)
+        response = client.models.generate_content(
+            model=model_name,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=DailyWordItem,
+                temperature=0.7,
+            ),
+        )
+        print(f"[{model_name}] 모델 호출 성공!", flush=True)
         break
+    except Exception as e:
+        print(f"[{model_name}] 호출 실패: {e}", flush=True)
+        time.sleep(2)
 
 if not response:
     raise RuntimeError("모든 모델 호출 시도가 실패했습니다.")
@@ -94,10 +94,10 @@ new_entry = {
     "payload": generated["payload"],
 }
 
-db["items"].insert(0, new_entry)  # 최신 단어가 맨 앞에 오도록 추가
+db["items"].insert(0, new_entry)
 db["updated_at"] = today_str
 
 with open(DATA_FILE, "w", encoding="utf-8") as f:
     json.dump(db, f, ensure_ascii=False, indent=2)
 
-print(f"[{today_str}] 신규 단어 생성 완료: {new_entry['title']}")
+print(f"[{today_str}] 신규 단어 생성 완료: {new_entry['title']}", flush=True)
