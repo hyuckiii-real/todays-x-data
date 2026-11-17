@@ -61,5 +61,14 @@
     "meaning": "실용적인, 현실적인",
     "example_en": "We need to take a pragmatic approach to solve this problem.",
     "example_ko": "우리는 이 문제를 해결하기 위해 실용적인 접근을 취할 필요가 있다."
+  },
+  {
+    "date": "2026-11-18",
+    "word": "innovative",
+    "phonetic": "/ˈɪnəveɪtɪv/",
+    "part_of_speech": "adjective",
+    "meaning": "혁신적인, 획기적인",
+    "example_en": "Our company always looks for innovative ways to solve complex problems.",
+    "example_ko": "우리 회사는 복잡한 문제를 해결하기 위해 항상 혁신적인 방법을 찾는다."
   }
 ]
