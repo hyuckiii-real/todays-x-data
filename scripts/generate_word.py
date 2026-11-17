@@ -1,5 +1,6 @@
 import json
 import os
+import time
 from datetime import datetime, timezone, timedelta
 from google import genai
 from google.genai import types
@@ -44,7 +45,7 @@ if any(item["date"] == today_str for item in db["items"]):
 
 existing_words = [item["title"] for item in db["items"]]
 
-# 4. Gemini API 호출
+# 4. Gemini API 호출 (503 일시 과부하 대비 자동 재시도 및 예비 모델 Fallback)
 client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
 prompt = f"""
@@ -54,15 +55,31 @@ prompt = f"""
 - quiz_distractors에는 정답(summary)과 품사는 비슷하지만 뜻이 완전히 다른 한국어 오답 보기 3개를 작성하세요.
 """
 
-response = client.models.generate_content(
-    model="gemini-3.8-flash",
-    contents=prompt,
-    config=types.GenerateContentConfig(
-        response_mime_type="application/json",
-        response_schema=DailyWordItem,
-        temperature=0.7,
-    ),
-)
+models_to_try = ["gemini-3.8-flash", "gemini-3.8-flash-lite"]
+response = None
+
+for attempt in range(3):
+    for model_name in models_to_try:
+        try:
+            response = client.models.generate_content(
+                model=model_name,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_schema=DailyWordItem,
+                    temperature=0.7,
+                ),
+            )
+            print(f"[{model_name}] 모델 호출 성공")
+            break
+        except Exception as e:
+            print(f"[{model_name}] 시도 {attempt + 1} 실패: {e}")
+            time.sleep(5)
+    if response:
+        break
+
+if not response:
+    raise RuntimeError("모든 모델 호출 시도가 실패했습니다.")
 
 generated = json.loads(response.text)
 
