@@ -1,0 +1,38 @@
+{
+  "app_type": "english_word",
+  "updated_at": "2026-11-17",
+  "items": [
+    {
+      "id": 1,
+      "date": "2026-11-17",
+      "category": "Business English",
+      "title": "Mitigate",
+      "subtitle": "위험이나 고통을 완화하다",
+      "summary": "어떠한 상황이나 고통, 위험의 강도를 줄이거나 경감시키는 것을 의미하는 세련된 비즈니스 어휘입니다.",
+      "payload": {
+        "part_of_speech": "verb",
+        "examples": [
+          {
+            "en": "The company implemented new safety protocols to mitigate the risk of workplace accidents.",
+            "ko": "그 회사는 산업 재해의 위험을 완화하기 위해 새로운 안전 수칙을 도입했습니다."
+          },
+          {
+            "en": "Measures were taken to mitigate the negative impact of the economic downturn.",
+            "ko": "경기 침체의 부정적인 영향을 완화하기 위한 조치들이 취해졌습니다."
+          }
+        ],
+        "synonyms": [
+          "alleviate",
+          "lessen",
+          "assuage",
+          "ease"
+        ],
+        "quiz_distractors": [
+          "모방하다",
+          "조사하다",
+          "강요하다"
+        ]
+      }
+    }
+  ]
+}
