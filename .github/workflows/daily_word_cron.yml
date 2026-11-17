@@ -1,0 +1,37 @@
+name: Daily English Word Generator
+
+on:
+  schedule:
+    # UTC 15:00 = 한국 시간(KST) 매일 자정 00:00
+    - cron: '0 15 * * *'
+  workflow_dispatch: # 수동 테스트 실행 버튼 활성화
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install google-genai pydantic
+
+      - name: Run generator script
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python scripts/generate_word.py
+
+      - name: Commit and push updated JSON
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add data/daily_words.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: update daily word" && git push)
