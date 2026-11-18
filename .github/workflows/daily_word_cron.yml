@@ -4,7 +4,7 @@ on:
   schedule:
     # UTC 15:00 = 한국 시간(KST) 매일 자정 00:00
     - cron: '0 15 * * *'
-  workflow_dispatch: # 수동 테스트 실행 버튼 활성화
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -22,16 +22,16 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install google-genai pydantic
+        run: pip install google-genai pydantic edge-tts
 
       - name: Run generator script
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python scripts/generate_word.py
 
-      - name: Commit and push updated JSON
+      - name: Commit and push updated JSON and Audio
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add data/daily_words.json
-          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: update daily word" && git push)
+          git add data/daily_words.json audio/
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: update daily word and native audio" && git push)
