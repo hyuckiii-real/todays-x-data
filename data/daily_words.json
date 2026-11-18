@@ -14,11 +14,13 @@
         "examples": [
           {
             "en": "The evidence was not sufficient to substantiate his claims.",
-            "ko": "그 증거는 그의 주장을 입증하기에 충분하지 않았다."
+            "ko": "그 증거는 그의 주장을 입증하기에 충분하지 않았다.",
+            "audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/2_ex0.mp3"
           },
           {
             "en": "We need to substantiate our project proposal with more market data.",
-            "ko": "우리는 시장 데이터를 더 확보하여 프로젝트 제안서를 뒷받침해야 한다."
+            "ko": "우리는 시장 데이터를 더 확보하여 프로젝트 제안서를 뒷받침해야 한다.",
+            "audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/2_ex1.mp3"
           }
         ],
         "synonyms": [
@@ -31,7 +33,8 @@
           "대체하다",
           "지연하다",
           "강화하다"
-        ]
+        ],
+        "word_audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/2_word.mp3"
       }
     },
     {
@@ -46,11 +49,13 @@
         "examples": [
           {
             "en": "The company implemented new safety protocols to mitigate the risk of workplace accidents.",
-            "ko": "그 회사는 산업 재해의 위험을 완화하기 위해 새로운 안전 수칙을 도입했습니다."
+            "ko": "그 회사는 산업 재해의 위험을 완화하기 위해 새로운 안전 수칙을 도입했습니다.",
+            "audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/1_ex0.mp3"
           },
           {
             "en": "Measures were taken to mitigate the negative impact of the economic downturn.",
-            "ko": "경기 침체의 부정적인 영향을 완화하기 위한 조치들이 취해졌습니다."
+            "ko": "경기 침체의 부정적인 영향을 완화하기 위한 조치들이 취해졌습니다.",
+            "audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/1_ex1.mp3"
           }
         ],
         "synonyms": [
@@ -63,7 +68,8 @@
           "모방하다",
           "조사하다",
           "강요하다"
-        ]
+        ],
+        "word_audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/1_word.mp3"
       }
     }
   ]
