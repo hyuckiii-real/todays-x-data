@@ -70,5 +70,14 @@
     "meaning": "혁신적인, 획기적인",
     "example_en": "Our company always looks for innovative ways to solve complex problems.",
     "example_ko": "우리 회사는 복잡한 문제를 해결하기 위해 항상 혁신적인 방법을 찾는다."
+  },
+  {
+    "date": "2026-11-19",
+    "word": "mitigate",
+    "phonetic": "/ˈmɪtɪɡeɪt/",
+    "part_of_speech": "verb",
+    "meaning": "완화시키다, 경감시키다",
+    "example_en": "We need to take steps to mitigate the risks involved in this project.",
+    "example_ko": "우리는 이 프로젝트에 포함된 위험을 완화하기 위한 조치를 취해야 한다."
   }
 ]
