@@ -1,7 +1,42 @@
 {
   "app_type": "english_word",
-  "updated_at": "2026-11-18",
+  "updated_at": "2026-11-19",
   "items": [
+    {
+      "id": 3,
+      "date": "2026-11-19",
+      "category": "비즈니스 어휘",
+      "title": "Prudent",
+      "subtitle": "신중한, 빈틈없는",
+      "summary": "신중하고 사려 깊은 태도로 현명하게 판단하는 것을 의미합니다.",
+      "payload": {
+        "part_of_speech": "형용사",
+        "examples": [
+          {
+            "en": "It is prudent to save some money for future emergencies.",
+            "ko": "미래의 비상 상황을 위해 돈을 조금 저축해 두는 것이 신중한 처사입니다.",
+            "audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/3_ex0.mp3"
+          },
+          {
+            "en": "The manager made a prudent decision to delay the project until the market stabilizes.",
+            "ko": "관리자는 시장이 안정될 때까지 프로젝트를 연기하기로 신중한 결정을 내렸습니다.",
+            "audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/3_ex1.mp3"
+          }
+        ],
+        "synonyms": [
+          "cautious",
+          "wise",
+          "sensible",
+          "judicious"
+        ],
+        "quiz_distractors": [
+          "뻔뻔한",
+          "부유한",
+          "비참한"
+        ],
+        "word_audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/3_word.mp3"
+      }
+    },
     {
       "id": 2,
       "date": "2026-11-18",
