@@ -33,7 +33,7 @@ today_str = datetime.now(KST).strftime("%Y-%m-%d")
 DATA_FILE = "data/daily_words.json"
 AUDIO_DIR = "audio"
 RAW_BASE_URL = "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio"
-VOICE = "en-US-AriaNeural"  # 자연스러운 미국 원어민 여성 성우 음성 (남성 원할 시 en-US-GuyNeural)
+VOICE = "en-US-AriaNeural"  # 미국 원어민 여성 성우 음성
 
 os.makedirs("data", exist_ok=True)
 os.makedirs(AUDIO_DIR, exist_ok=True)
