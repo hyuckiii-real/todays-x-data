@@ -1,7 +1,42 @@
 {
   "app_type": "english_word",
-  "updated_at": "2026-11-19",
+  "updated_at": "2026-11-20",
   "items": [
+    {
+      "id": 4,
+      "date": "2026-11-20",
+      "category": "비즈니스 어휘",
+      "title": "Adhere",
+      "subtitle": "고수하다, 달라붙다",
+      "summary": "어떤 규칙, 계획, 혹은 신념을 굳게 지키거나 따르는 것을 의미하는 동사입니다.",
+      "payload": {
+        "part_of_speech": "동사",
+        "examples": [
+          {
+            "en": "All employees must adhere to the company's safety regulations.",
+            "ko": "모든 직원은 회사의 안전 규정을 준수해야 합니다.",
+            "audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/4_ex0.mp3"
+          },
+          {
+            "en": "The glue failed to adhere to the smooth surface.",
+            "ko": "그 접착제는 매끄러운 표면에 달라붙지 않았다.",
+            "audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/4_ex1.mp3"
+          }
+        ],
+        "synonyms": [
+          "Comply",
+          "Observe",
+          "Stick",
+          "Abide by"
+        ],
+        "quiz_distractors": [
+          "무시하다",
+          "변경하다",
+          "제안하다"
+        ],
+        "word_audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/4_word.mp3"
+      }
+    },
     {
       "id": 3,
       "date": "2026-11-19",
