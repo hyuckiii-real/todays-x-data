@@ -1,7 +1,42 @@
 {
   "app_type": "english_word",
-  "updated_at": "2026-11-20",
+  "updated_at": "2026-11-21",
   "items": [
+    {
+      "id": 5,
+      "date": "2026-11-21",
+      "category": "비즈니스 어휘",
+      "title": "Mitigate",
+      "subtitle": "어려운 상황을 완화하다",
+      "summary": "어떤 문제나 고통, 위험 등을 줄이거나 덜 심각하게 만들다",
+      "payload": {
+        "part_of_speech": "verb",
+        "examples": [
+          {
+            "en": "We need to take steps to mitigate the risks associated with the new project.",
+            "ko": "우리는 새로운 프로젝트와 관련된 위험을 완화하기 위한 조치를 취해야 합니다.",
+            "audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/5_ex0.mp3"
+          },
+          {
+            "en": "The government is trying to mitigate the effects of the economic crisis.",
+            "ko": "정부는 경제 위기의 영향을 완화하기 위해 노력하고 있습니다.",
+            "audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/5_ex1.mp3"
+          }
+        ],
+        "synonyms": [
+          "alleviate",
+          "lessen",
+          "assuage",
+          "moderate"
+        ],
+        "quiz_distractors": [
+          "모방하다",
+          "조사하다",
+          "선동하다"
+        ],
+        "word_audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/5_word.mp3"
+      }
+    },
     {
       "id": 4,
       "date": "2026-11-20",
