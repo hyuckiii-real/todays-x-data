@@ -1,7 +1,42 @@
 {
   "app_type": "english_word",
-  "updated_at": "2026-11-21",
+  "updated_at": "2026-11-22",
   "items": [
+    {
+      "id": 6,
+      "date": "2026-11-22",
+      "category": "비즈니스 영어",
+      "title": "Mitigate 대신 쓰기 좋은 비즈니스 어휘: Alleviate",
+      "subtitle": "고통이나 문제의 심각성을 완화하다",
+      "summary": "어려움이나 고통, 문제점 등을 덜어주거나 완화하다",
+      "payload": {
+        "part_of_speech": "동사",
+        "examples": [
+          {
+            "en": "The new policy is intended to alleviate the financial burden on low-income families.",
+            "ko": "새로운 정책은 저소득층 가정의 재정적 부담을 완화하기 위한 것입니다.",
+            "audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/6_ex0.mp3"
+          },
+          {
+            "en": "We need to take steps to alleviate the traffic congestion in the city center.",
+            "ko": "우리는 도심의 교통 체증을 완화하기 위한 조치를 취해야 합니다.",
+            "audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/6_ex1.mp3"
+          }
+        ],
+        "synonyms": [
+          "relieve",
+          "ease",
+          "lessen",
+          "assuage"
+        ],
+        "quiz_distractors": [
+          "가속화하다",
+          "방해하다",
+          "제안하다"
+        ],
+        "word_audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/6_word.mp3"
+      }
+    },
     {
       "id": 5,
       "date": "2026-11-21",
