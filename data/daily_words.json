@@ -1,7 +1,42 @@
 {
   "app_type": "english_word",
-  "updated_at": "2026-11-22",
+  "updated_at": "2026-11-23",
   "items": [
+    {
+      "id": 7,
+      "date": "2026-11-23",
+      "category": "비즈니스 어휘",
+      "title": "Ambiguous",
+      "subtitle": "두 가지 이상의 의미로 해석될 수 있는",
+      "summary": "어떤 사안이나 말이 명확하지 않아 여러 가지로 해석될 여지가 있는 상태를 의미합니다.",
+      "payload": {
+        "part_of_speech": "형용사",
+        "examples": [
+          {
+            "en": "The terms of the contract were intentionally left ambiguous.",
+            "ko": "계약 조건은 의도적으로 모호하게 남겨져 있었다.",
+            "audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/7_ex0.mp3"
+          },
+          {
+            "en": "His reply to my question was somewhat ambiguous.",
+            "ko": "내 질문에 대한 그의 답변은 다소 모호했다.",
+            "audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/7_ex1.mp3"
+          }
+        ],
+        "synonyms": [
+          "vague",
+          "equivocal",
+          "obscure",
+          "unclear"
+        ],
+        "quiz_distractors": [
+          "야심 찬",
+          "지루한",
+          "강압적인"
+        ],
+        "word_audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/7_word.mp3"
+      }
+    },
     {
       "id": 6,
       "date": "2026-11-22",
