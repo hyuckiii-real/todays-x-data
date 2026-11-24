@@ -4,10 +4,21 @@ on:
   schedule:
     # UTC 15:00 = 한국 시간(KST) 매일 자정 00:00
     - cron: '0 15 * * *'
+    # 자동복구: KST 06:00
+    - cron: '0 21 * * *'
   workflow_dispatch:
+    inputs:
+      repair_duplicate_date:
+        description: 'Optional KST date to replace a saved duplicate (YYYY-MM-DD)'
+        required: false
+        type: string
 
 permissions:
   contents: write
+
+concurrency:
+  group: daily-word-publishing
+  cancel-in-progress: false
 
 jobs:
   generate:
@@ -15,6 +26,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -27,6 +40,7 @@ jobs:
       - name: Run generator script
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          REPAIR_DUPLICATE_DATE: ${{ inputs.repair_duplicate_date }}
         run: python scripts/generate_word.py
 
       - name: Commit and push updated JSON and Audio

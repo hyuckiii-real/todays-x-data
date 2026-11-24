@@ -4,7 +4,13 @@ on:
   schedule:
     # 한국 시간(KST) 매일 00시 18분에 자동 실행 (정각 트래픽 회피)
     - cron: '18 15 * * *'
+    # 자동복구: KST 06:18
+    - cron: '18 21 * * *'
   workflow_dispatch:
+
+concurrency:
+  group: daily-word-publishing
+  cancel-in-progress: false
 
 jobs:
   run-daily:
@@ -15,6 +21,8 @@ jobs:
     steps:
       - name: 저장소 체크아웃
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
 
       - name: Python 설정
         uses: actions/setup-python@v5
@@ -34,5 +42,4 @@ jobs:
           git config --global user.name "DailyBot"
           git config --global user.email "bot@github.com"
           git add today.json archive.json
-          git commit -m "Auto update: $(date +'%Y-%m-%d')" || exit 0
-          git push
+          git diff --cached --quiet || (git commit -m "Auto update: $(date +'%Y-%m-%d')" && git push)
