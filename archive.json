@@ -124,5 +124,14 @@
     "meaning": "아주 매끄러운, 이질감이 없는",
     "example_en": "The app offers a seamless experience across all devices.",
     "example_ko": "그 앱은 모든 기기에서 아주 매끄러운 경험을 제공합니다."
+  },
+  {
+    "date": "2026-11-25",
+    "word": "feasible",
+    "phonetic": "/ˈfiːzəbl/",
+    "part_of_speech": "adjective",
+    "meaning": "실현 가능한",
+    "example_en": "We need to find a feasible solution to this problem by tomorrow.",
+    "example_ko": "우리는 내일까지 이 문제에 대한 실현 가능한 해결책을 찾아야 한다."
   }
 ]
