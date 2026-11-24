@@ -4,7 +4,13 @@ on:
   schedule:
     # 한국 시간(KST) 매일 00시 18분에 자동 실행 (정각 트래픽 회피)
     - cron: '18 15 * * *'
+    # 자동복구: KST 06:18
+    - cron: '18 21 * * *'
   workflow_dispatch:
+
+concurrency:
+  group: daily_daily
+  cancel-in-progress: false
 
 jobs:
   run-daily:
