@@ -2,6 +2,7 @@ import os
 import json
 import time
 import re
+import unicodedata
 import requests
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -14,10 +15,18 @@ if os.path.exists("archive.json"):
     try:
         with open("archive.json", "r", encoding="utf-8") as f:
             archive = json.load(f)
-    except Exception:
-        archive = []
+    except Exception as exc:
+        raise RuntimeError("archive.json 읽기 실패: 이전 단어 기록을 보호하기 위해 생성 중단") from exc
 
-past_words = [item.get("word", "").lower() for item in archive if isinstance(item, dict)]
+def normalize_word(value):
+    return re.sub(r"\s+", " ", unicodedata.normalize("NFKC", str(value)).casefold()).strip()
+
+if any(isinstance(item, dict) and item.get("date") == today_str for item in archive):
+    print(f"[{today_str}] 오늘 단어가 이미 있어 재생성하지 않습니다.")
+    raise SystemExit(0)
+
+past_words = [item.get("word", "") for item in archive if isinstance(item, dict)]
+used_words = {normalize_word(w) for w in past_words if w}
 
 api_key = os.environ.get("GEMINI_API_KEY", "").strip()
 if not api_key:
@@ -27,7 +36,7 @@ prompt_text = f"""
 유용한 영어 단어나 숙어 1개를 선정해서 반드시 유효한 순수 JSON 형식으로만 응답해줘.
 값(문자열) 내부에는 큰따옴표(")와 줄바꿈을 절대 쓰지 말고, 작은따옴표(')만 사용해.
 
-제외 단어: {past_words[-100:]}
+제외 단어: {past_words}
 날짜: {today_str}
 
 형식:
@@ -82,6 +91,9 @@ for model in target_models:
                 clean_text = re.sub(r'[\r\n]+', ' ', clean_text)
                 parsed = json.loads(clean_text)
                 if all(k in parsed for k in ["word", "meaning", "example_en", "example_ko"]):
+                    if not parsed["word"] or normalize_word(parsed["word"]) in used_words:
+                        print(f"중복 또는 빈 단어 생성: {parsed.get('word')}. 다른 후보 요청")
+                        continue
                     parsed["date"] = today_str
                     data = parsed
                     print(f"호출 및 JSON 파싱 성공: {model}")
