@@ -2,6 +2,8 @@ import asyncio
 import json
 import os
 import time
+import re
+import unicodedata
 from datetime import datetime, timezone, timedelta
 import edge_tts
 from google import genai
@@ -71,9 +73,13 @@ if os.path.exists(DATA_FILE):
 else:
     db = {"app_type": "english_word", "updated_at": "", "items": []}
 
+def normalize_word(value):
+    return re.sub(r"\s+", " ", unicodedata.normalize("NFKC", str(value)).casefold()).strip()
+
 # 5. 오늘 날짜 단어가 없으면 신규 생성
 if not any(item["date"] == today_str for item in db["items"]):
-    existing_words = [item["title"] for item in db["items"]]
+    existing_words = [item["title"] for item in db["items"] if item.get("title")]
+    used_words = {normalize_word(w) for w in existing_words}
     client = genai.Client(
         api_key=os.environ["GEMINI_API_KEY"],
         http_options=types.HttpOptions(timeout=45000)
@@ -95,7 +101,7 @@ if not any(item["date"] == today_str for item in db["items"]):
     prompt = f"""
     한국인 성인 학습자를 위한 '오늘의 영단어' 1개를 선정해 주세요.
     - 난이도: 토익 750~900점 수준 또는 실생활/비즈니스에서 유용하지만 헷갈리기 쉬운 세련된 어휘
-    - 제외할 단어(이미 출제됨): {', '.join(existing_words[-100:])}
+    - 제외할 단어(이미 출제됨): {', '.join(existing_words)}
     - quiz_distractors에는 정답(summary)과 품사는 비슷하지만 뜻이 완전히 다른 한국어 오답 보기 3개를 작성하세요.
     """
 
@@ -113,6 +119,11 @@ if not any(item["date"] == today_str for item in db["items"]):
                         temperature=0.7,
                     ),
                 )
+                candidate = json.loads(response.text)
+                if not candidate.get("title") or normalize_word(candidate["title"]) in used_words:
+                    print(f"[{model_name}] 중복 단어 생성: {candidate.get('title')}. 재시도합니다.", flush=True)
+                    response = None
+                    continue
                 print(f"[{model_name}] 모델 호출 성공!", flush=True)
                 break
             except Exception as e:
