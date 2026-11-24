@@ -1,7 +1,42 @@
 {
   "app_type": "english_word",
-  "updated_at": "2026-11-23",
+  "updated_at": "2026-11-24",
   "items": [
+    {
+      "id": 8,
+      "date": "2026-11-24",
+      "category": "비즈니스 영어",
+      "title": "Substantiate",
+      "subtitle": "비즈니스 현장에서 신뢰를 입증할 때 사용하는 필수 어휘",
+      "summary": "어떤 주장이나 사실이 진실임을 증명하거나 뒷받침하다",
+      "payload": {
+        "part_of_speech": "동사",
+        "examples": [
+          {
+            "en": "The evidence provided was not sufficient to substantiate his claims.",
+            "ko": "제시된 증거는 그의 주장을 입증하기에 충분하지 않았다.",
+            "audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/8_ex0.mp3"
+          },
+          {
+            "en": "Can you substantiate your report with more detailed data?",
+            "ko": "보고서를 더 상세한 데이터로 뒷받침해 주실 수 있나요?",
+            "audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/8_ex1.mp3"
+          }
+        ],
+        "synonyms": [
+          "verify",
+          "validate",
+          "corroborate",
+          "prove"
+        ],
+        "quiz_distractors": [
+          "실질적으로 변화시키다",
+          "대체품을 마련하다",
+          "지속적으로 거부하다"
+        ],
+        "word_audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/8_word.mp3"
+      }
+    },
     {
       "id": 7,
       "date": "2026-11-23",
