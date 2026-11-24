@@ -36,7 +36,7 @@ prompt_text = f"""
 유용한 영어 단어나 숙어 1개를 선정해서 반드시 유효한 순수 JSON 형식으로만 응답해줘.
 값(문자열) 내부에는 큰따옴표(")와 줄바꿈을 절대 쓰지 말고, 작은따옴표(')만 사용해.
 
-제외 단어: {past_words}
+제외 단어: {past_words[-100:]}
 날짜: {today_str}
 
 형식:
@@ -91,7 +91,9 @@ for model in target_models:
                 clean_text = re.sub(r'[\r\n]+', ' ', clean_text)
                 parsed = json.loads(clean_text)
                 if all(k in parsed for k in ["word", "meaning", "example_en", "example_ko"]):
-                    if not parsed["word"] or normalize_word(parsed["word"]) in used_words:
+                    word = parsed["word"]
+                    normalized_word = normalize_word(word) if isinstance(word, str) else ""
+                    if not normalized_word or normalized_word in used_words:
                         print(f"중복 또는 빈 단어 생성: {parsed.get('word')}. 다른 후보 요청")
                         continue
                     parsed["date"] = today_str

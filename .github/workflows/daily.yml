@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: daily_daily
+  group: daily-word-publishing
   cancel-in-progress: false
 
 jobs:
@@ -21,6 +21,8 @@ jobs:
     steps:
       - name: 저장소 체크아웃
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
 
       - name: Python 설정
         uses: actions/setup-python@v5
@@ -40,5 +42,4 @@ jobs:
           git config --global user.name "DailyBot"
           git config --global user.email "bot@github.com"
           git add today.json archive.json
-          git commit -m "Auto update: $(date +'%Y-%m-%d')" || exit 0
-          git push
+          git diff --cached --quiet || (git commit -m "Auto update: $(date +'%Y-%m-%d')" && git push)

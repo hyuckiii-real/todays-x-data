@@ -76,8 +76,27 @@ else:
 def normalize_word(value):
     return re.sub(r"\s+", " ", unicodedata.normalize("NFKC", str(value)).casefold()).strip()
 
-# 5. 오늘 날짜 단어가 없으면 신규 생성
-if not any(item["date"] == today_str for item in db["items"]):
+# 수동 복구는 지정한 날짜에 이미 저장된 중복 단어에만 적용한다.
+repair_date = os.environ.get("REPAIR_DUPLICATE_DATE", "").strip()
+target_date = repair_date or today_str
+repair_index = None
+if repair_date:
+    repair_index = next(
+        (index for index, item in enumerate(db["items"]) if item["date"] == repair_date),
+        None,
+    )
+    if repair_index is None:
+        raise ValueError(f"복구할 날짜의 영단어가 없습니다: {repair_date}")
+
+    duplicate_title = normalize_word(db["items"][repair_index]["title"])
+    if not any(
+        item["date"] < repair_date and normalize_word(item["title"]) == duplicate_title
+        for item in db["items"]
+    ):
+        print(f"[{repair_date}] 이전 날짜와 중복된 단어가 없어 교체하지 않습니다.", flush=True)
+        raise SystemExit(0)
+
+if repair_index is not None or not any(item["date"] == target_date for item in db["items"]):
     existing_words = [item["title"] for item in db["items"] if item.get("title")]
     used_words = {normalize_word(w) for w in existing_words}
     client = genai.Client(
@@ -101,11 +120,11 @@ if not any(item["date"] == today_str for item in db["items"]):
     prompt = f"""
     한국인 성인 학습자를 위한 '오늘의 영단어' 1개를 선정해 주세요.
     - 난이도: 토익 750~900점 수준 또는 실생활/비즈니스에서 유용하지만 헷갈리기 쉬운 세련된 어휘
-    - 제외할 단어(이미 출제됨): {', '.join(existing_words)}
+    - 제외할 단어(최근 출제됨): {', '.join(existing_words[:100])}
     - quiz_distractors에는 정답(summary)과 품사는 비슷하지만 뜻이 완전히 다른 한국어 오답 보기 3개를 작성하세요.
     """
 
-    response = None
+    generated = None
     for attempt in range(1, 4):
         for model_name in priority_models[:4]:
             try:
@@ -119,36 +138,38 @@ if not any(item["date"] == today_str for item in db["items"]):
                         temperature=0.7,
                     ),
                 )
-                candidate = json.loads(response.text)
-                if not candidate.get("title") or normalize_word(candidate["title"]) in used_words:
-                    print(f"[{model_name}] 중복 단어 생성: {candidate.get('title')}. 재시도합니다.", flush=True)
-                    response = None
+                candidate = DailyWordItem.model_validate_json(response.text)
+                normalized_title = normalize_word(candidate.title)
+                if not normalized_title or normalized_title in used_words:
+                    print(f"[{model_name}] 중복 또는 빈 단어 생성: {candidate.title}. 재시도합니다.", flush=True)
                     continue
+                generated = candidate.model_dump()
                 print(f"[{model_name}] 모델 호출 성공!", flush=True)
                 break
             except Exception as e:
                 print(f"[{model_name}] 실패: {e}", flush=True)
                 time.sleep(3)
-        if response:
+        if generated is not None:
             break
 
-    if not response:
-        raise RuntimeError("모든 모델 호출 시도가 실패했습니다.")
-
-    generated = json.loads(response.text)
+    if generated is None:
+        raise RuntimeError("중복되지 않는 유효한 단어를 생성하지 못했습니다.")
 
     new_entry = {
-        "id": len(db["items"]) + 1,
-        "date": today_str,
+        "id": max((item["id"] for item in db["items"]), default=0) + 1,
+        "date": target_date,
         "category": generated["category"],
         "title": generated["title"],
         "subtitle": generated["subtitle"],
         "summary": generated["summary"],
         "payload": generated["payload"],
     }
-    db["items"].insert(0, new_entry)
-    db["updated_at"] = today_str
-    print(f"[{today_str}] 신규 단어 생성 완료: {new_entry['title']}", flush=True)
+    if repair_index is None:
+        db["items"].insert(0, new_entry)
+        db["updated_at"] = target_date
+    else:
+        db["items"][repair_index] = new_entry
+    print(f"[{target_date}] 영단어 저장 준비 완료: {new_entry['title']}", flush=True)
 else:
     print(f"[{today_str}] 이미 오늘의 단어가 존재합니다. 누락된 오디오만 점검합니다.", flush=True)
 
