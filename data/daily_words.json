@@ -1,7 +1,41 @@
 {
   "app_type": "english_word",
-  "updated_at": "2026-11-25",
+  "updated_at": "2026-11-26",
   "items": [
+    {
+      "id": 12,
+      "date": "2026-11-26",
+      "category": "Business Vocabulary",
+      "title": "Prerequisite",
+      "subtitle": "선행조건, 필수요건",
+      "summary": "어떤 일이 성사되기 위해 먼저 갖추어져야 하는 조건이나 요건을 뜻합니다.",
+      "payload": {
+        "part_of_speech": "noun",
+        "examples": [
+          {
+            "en": "A bachelor's degree is a prerequisite for this job.",
+            "ko": "학사 학위는 이 직무의 필수 조건입니다.",
+            "audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/12_ex0.mp3"
+          },
+          {
+            "en": "Good communication skills are a prerequisite for teamwork.",
+            "ko": "원활한 소통 능력은 팀워크를 위한 선행 조건입니다.",
+            "audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/12_ex1.mp3"
+          }
+        ],
+        "synonyms": [
+          "requirement",
+          "precondition",
+          "necessity"
+        ],
+        "quiz_distractors": [
+          "파생상품",
+          "선택사항",
+          "임시방편"
+        ],
+        "word_audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/12_word.mp3"
+      }
+    },
     {
       "id": 11,
       "date": "2026-11-25",
