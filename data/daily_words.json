@@ -1,7 +1,41 @@
 {
   "app_type": "english_word",
-  "updated_at": "2026-11-24",
+  "updated_at": "2026-11-25",
   "items": [
+    {
+      "id": 10,
+      "date": "2026-11-25",
+      "category": "비즈니스 영단어",
+      "title": "Alleviate",
+      "subtitle": "고통이나 부담을 완화하다, 덜어주다",
+      "summary": "고통이나 문제점 등을 덜어주거나 완화하다",
+      "payload": {
+        "part_of_speech": "동사",
+        "examples": [
+          {
+            "en": "The new measures are designed to alleviate poverty in rural areas.",
+            "ko": "새로운 조치들은 농촌 지역의 빈곤을 완화하기 위해 고안되었습니다.",
+            "audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/10_ex0.mp3"
+          },
+          {
+            "en": "Take this medicine to alleviate the headache.",
+            "ko": "두통을 완화하기 위해 이 약을 드세요.",
+            "audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/10_ex1.mp3"
+          }
+        ],
+        "synonyms": [
+          "relieve",
+          "ease",
+          "reduce"
+        ],
+        "quiz_distractors": [
+          "논란을 증폭시키다",
+          "법안을 거부하다",
+          "예산을 삭감하다"
+        ],
+        "word_audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/10_word.mp3"
+      }
+    },
     {
       "id": 9,
       "date": "2026-11-24",
