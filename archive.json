@@ -133,5 +133,14 @@
     "meaning": "실현 가능한",
     "example_en": "We need to find a feasible solution to this problem by tomorrow.",
     "example_ko": "우리는 내일까지 이 문제에 대한 실현 가능한 해결책을 찾아야 한다."
+  },
+  {
+    "date": "2026-11-26",
+    "word": "bolster",
+    "phonetic": "/ˈboʊlstər/",
+    "part_of_speech": "verb",
+    "meaning": "강화하다,지지하다",
+    "example_en": "The government implemented new policies to bolster the economy.",
+    "example_ko": "정부는 경제를 강화하기 위해 새로운 정책을 시행했다."
   }
 ]
