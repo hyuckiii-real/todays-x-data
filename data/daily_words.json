@@ -3,37 +3,38 @@
   "updated_at": "2026-11-25",
   "items": [
     {
-      "id": 10,
+      "id": 11,
       "date": "2026-11-25",
-      "category": "비즈니스 영단어",
-      "title": "Alleviate",
-      "subtitle": "고통이나 부담을 완화하다, 덜어주다",
-      "summary": "고통이나 문제점 등을 덜어주거나 완화하다",
+      "category": "비즈니스 영어",
+      "title": "Consolidate",
+      "subtitle": "비즈니스 및 일상에서 자주 쓰이는 '통합하다, 공고히 하다'라는 의미의 고급 어휘",
+      "summary": "여러 개를 하나로 합치거나, 기존의 위치나 관계를 더욱 튼튼하게 만드는 행위",
       "payload": {
         "part_of_speech": "동사",
         "examples": [
           {
-            "en": "The new measures are designed to alleviate poverty in rural areas.",
-            "ko": "새로운 조치들은 농촌 지역의 빈곤을 완화하기 위해 고안되었습니다.",
-            "audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/10_ex0.mp3"
+            "en": "The company decided to consolidate its three regional offices into one central headquarters.",
+            "ko": "그 회사는 세 개의 지역 사무소를 하나의 중앙 본부로 통합하기로 결정했습니다.",
+            "audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/11_ex0.mp3"
           },
           {
-            "en": "Take this medicine to alleviate the headache.",
-            "ko": "두통을 완화하기 위해 이 약을 드세요.",
-            "audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/10_ex1.mp3"
+            "en": "She needed to consolidate her position in the market before launching new products.",
+            "ko": "그녀는 신제품을 출시하기 전에 시장 내에서의 입지를 공고히 할 필요가 있었습니다.",
+            "audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/11_ex1.mp3"
           }
         ],
         "synonyms": [
-          "relieve",
-          "ease",
-          "reduce"
+          "merge",
+          "strengthen",
+          "combine",
+          "fortify"
         ],
         "quiz_distractors": [
-          "논란을 증폭시키다",
-          "법안을 거부하다",
-          "예산을 삭감하다"
+          "분리하다",
+          "약화시키다",
+          "방해하다"
         ],
-        "word_audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/10_word.mp3"
+        "word_audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/11_word.mp3"
       }
     },
     {
