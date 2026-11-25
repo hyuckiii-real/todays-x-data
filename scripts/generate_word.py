@@ -74,7 +74,12 @@ else:
     db = {"app_type": "english_word", "updated_at": "", "items": []}
 
 def normalize_word(value):
-    return re.sub(r"\s+", " ", unicodedata.normalize("NFKC", str(value)).casefold()).strip()
+    title = unicodedata.normalize("NFKC", str(value))
+    prefix, separator, suffix = title.rpartition(":")
+    # 이전 기록에 붙은 한국어 설명을 제외하고 실제 영어 표제어를 비교한다.
+    if separator and re.search(r"[가-힣]", prefix) and re.fullmatch(r"[A-Za-z][A-Za-z '\u2019-]*", suffix.strip()):
+        title = suffix
+    return re.sub(r"\s+", " ", title.casefold()).strip()
 
 # 수동 복구는 지정한 날짜에 이미 저장된 중복 단어에만 적용한다.
 repair_date = os.environ.get("REPAIR_DUPLICATE_DATE", "").strip()
