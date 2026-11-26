@@ -1,7 +1,41 @@
 {
   "app_type": "english_word",
-  "updated_at": "2026-11-26",
+  "updated_at": "2026-11-27",
   "items": [
+    {
+      "id": 13,
+      "date": "2026-11-27",
+      "category": "비즈니스 영어",
+      "title": "Bolster",
+      "subtitle": "조직의 실적이나 자신감 등을 크게 '강화하다, 북돋우다'라는 뜻의 고급 비즈니스 어휘입니다.",
+      "summary": "강화하다, 지지하다",
+      "payload": {
+        "part_of_speech": "동사",
+        "examples": [
+          {
+            "en": "The company implemented new strategies to bolster employee morale.",
+            "ko": "회사는 직원들의 사기를 북돋우기 위해 새로운 전략을 실행했다.",
+            "audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/13_ex0.mp3"
+          },
+          {
+            "en": "Additional investments are needed to bolster the local economy.",
+            "ko": "지역 경제를 강화하기 위해 추가적인 투자가 필요하다.",
+            "audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/13_ex1.mp3"
+          }
+        ],
+        "synonyms": [
+          "strengthen",
+          "reinforce",
+          "support"
+        ],
+        "quiz_distractors": [
+          "방해하다, 저해하다",
+          "평가하다, 감정하다",
+          "철회하다, 취소하다"
+        ],
+        "word_audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/13_word.mp3"
+      }
+    },
     {
       "id": 12,
       "date": "2026-11-26",
