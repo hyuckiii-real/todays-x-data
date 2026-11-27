@@ -1,7 +1,41 @@
 {
   "app_type": "english_word",
-  "updated_at": "2026-11-27",
+  "updated_at": "2026-11-28",
   "items": [
+    {
+      "id": 14,
+      "date": "2026-11-28",
+      "category": "비즈니스 어휘",
+      "title": "Exacerbate",
+      "subtitle": "상황을 더욱 악화시키다",
+      "summary": "문제나 상황을 더욱 심각하게 만들다",
+      "payload": {
+        "part_of_speech": "동사",
+        "examples": [
+          {
+            "en": "The new policy only served to exacerbate the tension between the two departments.",
+            "ko": "그 새로운 정책은 두 부서 간의 긴장을 악화시켰을 뿐이다.",
+            "audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/14_ex0.mp3"
+          },
+          {
+            "en": "Ignoring the problem will only exacerbate the situation.",
+            "ko": "문제를 무시하는 것은 상황을 더 악화시킬 뿐이다.",
+            "audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/14_ex1.mp3"
+          }
+        ],
+        "synonyms": [
+          "worsen",
+          "aggravate",
+          "compound"
+        ],
+        "quiz_distractors": [
+          "개선하다",
+          "설득하다",
+          "보충하다"
+        ],
+        "word_audio_url": "https://raw.githubusercontent.com/hyuckiii-real/todays-x-data/main/audio/14_word.mp3"
+      }
+    },
     {
       "id": 13,
       "date": "2026-11-27",
